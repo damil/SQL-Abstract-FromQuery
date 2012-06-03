@@ -5,7 +5,7 @@ use Test::More;
 use lib "../lib";
 
 use Module::Load;
-load 'SQL::Abstract::FromQuery::Oracle';
+load 'SQL::Abstract::FromQuery';
 
 
 my $parser = SQL::Abstract::FromQuery->new(-components => [qw/Oracle/]);

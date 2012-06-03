@@ -3,11 +3,8 @@ use warnings;
 use Test::More;
 
 use lib "../lib";
-# use lib "d:/temp/Regexp-Grammars-1.016/lib";
 
-#use SQL::Abstract::FromQuery;
-use Module::Load;
-load 'SQL::Abstract::FromQuery';
+use SQL::Abstract::FromQuery;
 
 diag( "Testing SQL::Abstract::FromQuery $SQL::Abstract::FromQuery::VERSION, Perl $], $^X" );
 
@@ -24,6 +21,8 @@ my %tests = (
                      {'<>' => 'foo'}],
   neg_list       => ['!foo,bar,buz',
                      {-not_in => [qw/foo bar buz/]}],
+  neg_minus      => ['-foo',
+                     {'<>' => 'foo'}],
   num            => ['-123',
                      -123],
   between        => ['BETWEEN a AND z',
@@ -46,8 +45,6 @@ my %tests = (
                      '2003-02-01'],
   time           => ['1:02',
                      '01:02:00'],
-  bool           => ['N',
-                     0],
   quoted         => ['"foo  bar"',
                      'foo  bar'],
 );
@@ -62,6 +59,7 @@ my $where = $parser->parse(\%data);
 while (my ($test_name, $test_data) = each %tests) {
   is_deeply($where->{$test_name}, $test_data->[1], $test_name);
 }
+
 
 
 

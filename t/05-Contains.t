@@ -8,9 +8,9 @@ use Module::Load;
 load 'SQL::Abstract::FromQuery';
 
 my $parser = SQL::Abstract::FromQuery->new(
-  -components => [qw/FR Oracle/],
+  -components => [qw/Contains/],
   -fields => {
-     bool => [qw/bool_oui/],
+     contains => [qw/fulltext/],
    },
 );
 
@@ -18,12 +18,9 @@ my %tests = (
 # test_name      => [$given, $expected]
 # =========         ===================
 
-  date           => ['1.2.03',
-                     \ ["to_date(?, 'YYYY-MM-DD')", '2003-02-01']
+  fulltext       => [ 'foo bar, buz',
+                      {-contains => [qw/foo bar buz/]},
                     ],
-  bool_oui       => ['OUI',
-                     1],
-
 );
 
 my %data = map {$_ => $tests{$_}[0]} keys %tests;
