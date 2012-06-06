@@ -19,6 +19,7 @@ my $builder = Module::Build->new(
         'Scalar::Util'     => 0,
         'UNIVERSAL::DOES'  => 0,
         'namespace::clean' => 0,
+        'parent'           => 0,
     },
     add_to_cleanup      => [ 'SQL-Abstract-FromQuery-*' ],
     create_makefile_pl => 'traditional',
