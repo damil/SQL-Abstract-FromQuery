@@ -1,8 +1,12 @@
 Revision history for SQL-Abstract-FromQuery
 
+0.03  22.08.2014
+  - Changed algorithm for generating anonymous subclasses (avoid memleaks)
+  - Fixes/improvements in POD
+
 0.02  06.06.2012
-  Forgot dependency on parent.pm
+  - Forgot dependency on parent.pm
 
 0.01  03.06.2012
-  First release
+  - First release
 

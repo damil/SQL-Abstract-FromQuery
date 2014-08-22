@@ -8,11 +8,12 @@ use Module::Load     qw/load/;
 use Params::Validate qw/validate SCALAR SCALARREF CODEREF ARRAYREF HASHREF
                                  UNDEF  BOOLEAN/;
 use UNIVERSAL::DOES  qw/does/;
+use Digest::MD5      qw/md5_base64/;
 use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
@@ -112,29 +113,41 @@ sub new {
     # deactivate strict refs because we'll be playing with symbol tables
     no strict 'refs';
 
-    # dynamically create a new anonymous class
-    $class .= "::_ANON_::" . refaddr $self;
+    my @components;
     foreach my $component (@{$args{-components}}) {
       $component =~ s/^\+//
         or $component = __PACKAGE__ . "::$component";
       load $component;
-      push @{$class . "::ISA"}, $component;
+      push @components, $component;
       my @sub_grammar = $component->sub_grammar;
       push @{$self->{grammar_ISA}}, @sub_grammar if @sub_grammar;
     }
 
-    # use 'c3' inheritance in that package
-    mro::set_mro($class, 'c3');
+    # a new anonymous class will inherit from all components
+    $class .= "::_ANON_::" . md5_base64(join ",", sort @components);
+    unless (@{$class . "::ISA"}) {
+      # dynamically create that class and use 'c3' inheritance in it
+      push @{$class . "::ISA"}, @components;
+      mro::set_mro($class, 'c3');
+    }
   }
 
   # use root grammar if no derived grammar installed by components
   $self->{grammar_ISA} ||= [ 'SQL::Abstract::FromQuery' ];
 
   # setup fields info
-  while (my ($type, $fields_aref) = each %{$args{-fields}}) {
-    does($fields_aref, 'ARRAY')
-      or die "list of fields for type $type should be an arrayref";
-    $self->{field}{$_} = $type foreach @$fields_aref;
+  foreach my $type (keys %{$args{-fields}}) {
+    if ($type eq 'IGNORE') {
+      ref $args{-fields}{IGNORE} eq 'Regexp'
+        or die "IGNORE should be associated with a qr/.../ regular expression";
+      $self->{IGNORE} = $args{-fields}{IGNORE};
+    }
+    else {
+      my $fields_aref = $args{-fields}{$type};
+      does($fields_aref, 'ARRAY')
+        or die "list of fields for type $type should be an arrayref";
+      $self->{field}{$_} = $type foreach @$fields_aref;
+    }
   }
 
   bless $self, $class;
@@ -199,7 +212,9 @@ sub parse {
   my %errors;
  FIELD:
   foreach my $field (keys %$data) {
-    my $val = $data->{$field} or next FIELD;
+    # ignore fields in exclusion list or fields without any data
+    !$self->{IGNORE} or $field !~ $self->{IGNORE} or next FIELD;
+    my $val = $data->{$field}                     or next FIELD;
 
     # decide which grammar to apply
     my $rule    = $self->{field}{$field} || 'standard';
@@ -365,6 +380,7 @@ SQL::Abstract::FromQuery - Translating an HTTP Query into SQL::Abstract structur
         standard => [qw/field1 field2 .../],
         bool     => [qw/bool_field1/],
         ...  # other field types
+        IGNORE   => qr/^(..)/,      # fields that should be ignored
      }
   );
 
@@ -431,7 +447,8 @@ so you have to look at the source code to get all details.
 
 =head1 INPUT GRAMMAR
 
-Input accepted in a form field can be 
+By default, form fields must conform to the C<standard> grammar,
+which accepts
 
 =over
 
@@ -478,10 +495,13 @@ boolean values C<YES>, C<NO>, C<TRUE> or C<FALSE>
 
 =back
 
-Look at the source code of this module to see the precise
-syntax, expressed in L<Regexp::Grammars|Regexp::Grammars> format.
-Syntax rules can be augmented or modified in subclasses --
-see L</INHERITANCE> below.
+Fields can be explicitly associated with other
+grammar rules, different from C<standard> (see below).
+
+The precise syntax for grammar rules is expressed in
+L<Regexp::Grammars|Regexp::Grammars> format within the source code of
+this module.  Grammar rules can be augmented or modified in subclasses
+-- see L</INHERITANCE> below.
 
 
 =head1 METHODS
@@ -510,19 +530,49 @@ will be applied to each field (so some fields may be forced to be
 numbers, strings, bools, or any other kind of user-defined rule).
 If a field has no explicit grammar, the C<standard> rule is applied. 
 
+Key C<IGNORE> in the fields hashref is a reserved word; it should be
+associated with a regex, and user fields found in the query
+that match this regex will be ignored. This is useful if the HTML form
+contains additional information useful for the application, but which
+should not participate in the generated SQL.
+
+
 =back
+
+=head2 parse
+
+  my $criteria = $parser->parse($data);
+
+Parses the collection of fields in C<$data>, and returns a C<$criteria>
+hashref in L<SQL::Abstract|SQL::Abstract> format, ready to be injected
+as a "where" clause.
+
+Input C<$data> can be supplied either as a plain hashref, or as an
+object that possesses a CGI-compatible C<param()> method (such as
+L<CGI>, L<Catalyst::Request> or C<Plack::Request>).
+
+Each field in C<$data> is parsed according to its corresponding
+grammar rule, as specified in the C<-fields> argument to the
+L</new> method. Fields without any explicit grammar rule are
+parsed through the C<standard> rule.
+
+In case of parse errors, an exception is raised, which stringifies
+to a list of faulty fields and their asoociated errors. Internally
+this is an object with an arrayref of arrayrefs of error messages
+-- see the source code if you need to walk through that structure.
 
 
 =head1 INHERITANCE
 
-[explain]
+Components use inheritance from the present class in two ways : they
+can extend/override the syntax rules, and they can extend/override
+the methods. See the source code of
+L<SQL::Abstract::FromQuery::FR> for an example.
 
-See L<SQL::Abstract::FromQuery::FR> for an example.
-
-Particular points :
-
-  - may reuse rules from the parent grammar, but beware of action rules
-  - do not use regex ops in action rules
+When writing subclasses, beware that action rules hooked to the 
+grammar cannot use regex operations : this would cause a segfault
+(because L<Regexp::Grammars> runs inside the perl regexp engine, and
+this is not re-entrant).
 
 
 =head1 AUTHOR

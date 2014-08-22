@@ -6,9 +6,12 @@ use lib "../lib";
 
 use SQL::Abstract::FromQuery;
 
-diag( "Testing SQL::Abstract::FromQuery $SQL::Abstract::FromQuery::VERSION, Perl $], $^X" );
+diag( "Testing SQL::Abstract::FromQuery "
+    . "$SQL::Abstract::FromQuery::VERSION, Perl $], $^X" );
 
-my $parser = SQL::Abstract::FromQuery->new;
+my $parser = SQL::Abstract::FromQuery->new(
+  -fields => {IGNORE => qr/^foo/},
+);
 
 my %tests = (
 # test_name      => [$given, $expected]
@@ -47,6 +50,10 @@ my %tests = (
                      '01:02:00'],
   quoted         => ['"foo  bar"',
                      'foo  bar'],
+
+  foo1           => ['BETWEEN ! - %*"', # will be IGNOREd
+                     undef],
+
 );
 
 my %data = map {$_ => $tests{$_}[0]} keys %tests;

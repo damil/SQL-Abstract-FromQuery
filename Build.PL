@@ -13,6 +13,7 @@ my $builder = Module::Build->new(
     },
     requires => {
         'perl'             => 5.010,
+        'Digest::MD5'      => 0,
         'Module::Load'     => 0,
         'Params::Validate' => 0,
         'Regexp::Grammars' => 0,
@@ -23,6 +24,11 @@ my $builder = Module::Build->new(
     },
     add_to_cleanup      => [ 'SQL-Abstract-FromQuery-*' ],
     create_makefile_pl => 'traditional',
+    meta_merge => {
+      resources => {
+        repository => 'https://github.com/damil/SQL-Abstract-FromQuery',
+       }
+     },
 );
 
 $builder->create_build_script();

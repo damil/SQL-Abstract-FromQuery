@@ -37,8 +37,14 @@ SQL::Abstract::FromQuery::Oracle - SQL::Abstract::FromQuery extension for Oracle
 
 =head1 SYNOPSIS
 
-=head1 EXPORT
+  my $parser = SQL::Abstract::FromQuery->new(
+    -components => [qw/Oracle/],
+  );
 
+=head1 DESCRIPTION
+
+This subclass automatically adds Oracle C<TO_DATE(...)> conversions
+in SQL generated from date and time fields.
 
 
 =head1 AUTHOR

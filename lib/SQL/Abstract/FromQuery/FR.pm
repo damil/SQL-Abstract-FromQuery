@@ -4,6 +4,10 @@ use strict;
 use warnings;
 use parent 'SQL::Abstract::FromQuery';
 
+=encoding latin1
+
+=cut
+
 
 # redefine rules 'null' and 'bool' from the root grammar
 {
@@ -92,7 +96,10 @@ SQL::Abstract::FromQuery::FR - SQL::Abstract::FromQuery extension for French dat
   my $parser = SQL::Abstract::FromQuery->new(-components => [qw/FR/]);
 
 
-=head1 EXPORT
+=head1 DESCRIPTION
+
+This subclass extends the L<SQL::Abstract::FromQuery> grammar for
+accepting keywords in french (like 'ENTRE', 'VRAI', 'FAUX', 'NUL').
 
 
 
