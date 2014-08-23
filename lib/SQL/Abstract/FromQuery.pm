@@ -1,6 +1,5 @@
 package SQL::Abstract::FromQuery;
 
-use 5.010;
 use strict;
 use warnings;
 use Scalar::Util     qw/refaddr reftype blessed/;
@@ -13,7 +12,7 @@ use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
@@ -124,7 +123,7 @@ sub new {
     }
 
     # a new anonymous class will inherit from all components
-    $class .= "::_ANON_::" . md5_base64(join ",", sort @components);
+    $class .= "::_ANON_::" . md5_base64(join ",", @components);
     unless (@{$class . "::ISA"}) {
       # dynamically create that class and use 'c3' inheritance in it
       push @{$class . "::ISA"}, @components;
@@ -132,7 +131,7 @@ sub new {
     }
   }
 
-  # use root grammar if no derived grammar installed by components
+  # use root grammar if no derived grammar was installed by components
   $self->{grammar_ISA} ||= [ 'SQL::Abstract::FromQuery' ];
 
   # setup fields info
@@ -217,7 +216,7 @@ sub parse {
     my $val = $data->{$field}                     or next FIELD;
 
     # decide which grammar to apply
-    my $rule    = $self->{field}{$field} || 'standard';
+    my $rule    = $self->{field}{$field}  ||  'standard';
     my $grammar = $self->{grammar}{$rule} ||= $self->_grammar($rule);
 
     # invoke grammar on field content
@@ -243,7 +242,7 @@ sub _flatten_into_hashref {
   my %h;
   foreach my $field ($data->param()) {
     my @vals = $data->param($field);
-    my $val = join ",", @vals; # TOO simple-minded ... make it more abstract
+    my $val = join ",", @vals; # TOO simple-minded - should make it more abstract
     $h{$field} = $val;
   }
   return \%h;
@@ -261,11 +260,9 @@ sub negated_values {
     ref $vals eq 'HASH' or die 'unexpected reference in negation';
     my ($op, $val, @others) = %$vals;
     not @others         or die 'unexpected hash size in negation';
-    given ($op) {
-      when ('-in') {return {-not_in => $val}                   }
-      when ('=')   {return {'<>'    => $val}                   }
-      default      {die "unexpected operator '$op' in negation"}
-    }
+    if    ($op eq '-in') {return {-not_in => $val}                   }
+    elsif ($op eq '='  ) {return {'<>'    => $val}                   }
+    else                 {die "unexpected operator '$op' in negation"}
   }
   else {
     return {'<>' => $vals};
