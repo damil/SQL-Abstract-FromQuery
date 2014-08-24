@@ -12,11 +12,11 @@ use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
-  use Regexp::Grammars;
+  use Regexp::Grammars 1.035;
   qr{
     # <logfile: - >
 
@@ -44,10 +44,10 @@ my $root_grammar = do {
       BETWEEN (*COMMIT) (?: <min=value> AND <max=value> | <error:> )
 
     <token: compare>
-       <= | < | >= | >
+       \<= | \< | \>= | \>
 
     <token: negate>
-        <> | -(?!\d) | != | !
+        \<\> | -(?!\d) | != | !
 
     <rule: value>
         <MATCH=null>
@@ -337,7 +337,8 @@ use overload
   '""' => sub {
     my $self = shift;
     my $msg = $self->{err_msg};
-    while (my ($field, $field_errors) = each %{$self->{errors}}) {
+    for my $field (sort keys %{$self->{errors}}) {
+      my $field_errors = $self->{errors}{$field};
       $msg .= "\n$field : " . join ", ", @$field_errors;
     }
 

@@ -1,5 +1,9 @@
 Revision history for SQL-Abstract-FromQuery
 
+0.05  24.08.2014
+  - upgraded dependency to Regexp::Grammars 1.035
+  - fixed testing bug in perl >= 5.18 because of hash key randomization
+
 0.04  23.08.2014
   - refactored given/when into plain if/elsif/else
 

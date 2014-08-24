@@ -16,14 +16,14 @@ my %data = (
 my $expected_error_EN = q{INCORRECT INPUT
 between : Expected min and max after "BETWEEN"
 gt : Expected a value after comparison operator
-string : Unexpected input after initial value ('bar')
-neg : Expected a value after negation};
+neg : Expected a value after negation
+string : Unexpected input after initial value ('bar')};
 
 my $expected_error_FR = q{SAISIE INCORRECTE
 between : Pas de valeurs min/max après "ENTRE/BETWEEN"
 gt : Aucune valeur après l'opérateur de comparaison
-string : Texte inattendu après la valeur initiale ('bar')
-neg : Aucune valeur après la négation};
+neg : Aucune valeur après la négation
+string : Texte inattendu après la valeur initiale ('bar')};
 
 plan tests => 2;
 
