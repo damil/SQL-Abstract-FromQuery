@@ -2,8 +2,6 @@ use strict;
 use warnings;
 use Test::More;
 
-use lib "../lib";
-
 use SQL::Abstract::FromQuery;
 
 
@@ -11,19 +9,16 @@ my %data = (
              gt      => ">",
              between => 'BETWEEN',
              neg     => '!',
-             string  => 'foo bar',
             );
 my $expected_error_EN = q{INCORRECT INPUT
 between : Expected min and max after "BETWEEN"
 gt : Expected a value after comparison operator
-neg : Expected a value after negation
-string : Unexpected input after initial value ('bar')};
+neg : Expected a value after negation};
 
 my $expected_error_FR = q{SAISIE INCORRECTE
 between : Pas de valeurs min/max après "ENTRE/BETWEEN"
 gt : Aucune valeur après l'opérateur de comparaison
-neg : Aucune valeur après la négation
-string : Texte inattendu après la valeur initiale ('bar')};
+neg : Aucune valeur après la négation};
 
 plan tests => 2;
 

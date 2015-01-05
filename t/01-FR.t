@@ -2,12 +2,8 @@ use strict;
 use warnings;
 use Test::More;
 
-use lib "../lib";
-
 use Module::Load;
 load 'SQL::Abstract::FromQuery';
-
-diag( "Testing SQL::Abstract::FromQuery $SQL::Abstract::FromQuery::VERSION, Perl $], $^X" );
 
 my $parser = SQL::Abstract::FromQuery->new(
   -components => [qw/FR/],

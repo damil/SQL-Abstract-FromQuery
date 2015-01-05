@@ -12,11 +12,11 @@ use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
-  use Regexp::Grammars 1.035;
+  use Regexp::Grammars 1.038;
   qr{
     # <logfile: - >
 
@@ -82,7 +82,7 @@ my $root_grammar = do {
      | "(.*?)" (*COMMIT)  (?{ $MATCH = $CAPTURE })
 
     <token: unquoted_string>
-     [^\s,]+ (*COMMIT)
+     [^\s,]+(?:\s+[^\s,]+)*?
 
   }xms;
 };
@@ -438,10 +438,6 @@ like this
 Form fields can be associated to "types" that specify the
 admissible syntax and may implement security checks.
 
-B<Note> : this module is in beta state. Many features still need
-further study; the API and/or behaviour
-may change in future releases; the current documentation is incomplete,
-so you have to look at the source code to get all details.
 
 =head1 INPUT GRAMMAR
 

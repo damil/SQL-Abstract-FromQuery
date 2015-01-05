@@ -1,5 +1,11 @@
 Revision history for SQL-Abstract-FromQuery
 
+0.06  05.01.2015
+  - upgraded dependency to Regexp::Grammars 1.038
+  - support spaces within plain values (no need to put quotation marks)
+  - improved tests
+  - removed notice about "beta software"
+
 0.05  24.08.2014
   - upgraded dependency to Regexp::Grammars 1.035
   - fixed testing bug in perl >= 5.18 because of hash key randomization

@@ -2,8 +2,6 @@ use strict;
 use warnings;
 use Test::More;
 
-use lib "../lib";
-
 use Module::Load;
 load 'SQL::Abstract::FromQuery';
 
