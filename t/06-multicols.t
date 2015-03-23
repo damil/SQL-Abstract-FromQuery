@@ -21,8 +21,19 @@ my $expected = {foo  => 'bar',
                          ]};
 
 # note explain $criteria;
+is_deeply($criteria, $expected, 'multicols');
 
-is_deeply($criteria, $expected);
+# test that a regular request (without multicols) works normally
+$criteria = $parser->parse({
+  foo => 123,
+  bar => 456,
+ });
+$expected = {
+  foo => 123,
+  bar => 456,
+ };
+is_deeply($criteria, $expected, 'regular');
+
 done_testing;
 
 

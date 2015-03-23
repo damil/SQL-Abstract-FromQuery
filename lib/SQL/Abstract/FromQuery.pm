@@ -13,7 +13,7 @@ use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
@@ -283,7 +283,7 @@ sub distribute_multicols_criteria {
   # assemble conditions and put them back into the criteria hash
   my $previous_and = $criteria->{-and};
   push @and_conditions, $previous_and if $previous_and;
-  $criteria->{-and} = \@and_conditions;
+  $criteria->{-and} = \@and_conditions if @and_conditions;
 }
 
 

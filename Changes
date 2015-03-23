@@ -1,5 +1,8 @@
 Revision history for SQL-Abstract-FromQuery
 
+0.08  23.03.2015
+  - fix multicolumns bug introduced in v0.07
+
 0.07  23.03.2015
   - added support for multicolumns
 
