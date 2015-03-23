@@ -1,5 +1,8 @@
 Revision history for SQL-Abstract-FromQuery
 
+0.07  23.03.2015
+  - added support for multicolumns
+
 0.06  05.01.2015
   - upgraded dependency to Regexp::Grammars 1.038
   - support spaces within plain values (no need to put quotation marks)

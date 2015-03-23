@@ -14,6 +14,7 @@ my $builder = Module::Build->new(
     requires => {
         'perl'             => 5.010,
         'Digest::MD5'      => 0,
+        'List::MoreUtils'  => 0,
         'Module::Load'     => 0,
         'Params::Validate' => 0,
         'Regexp::Grammars' => 1.038,
