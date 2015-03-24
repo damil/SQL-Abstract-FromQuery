@@ -1,5 +1,9 @@
 Revision history for SQL-Abstract-FromQuery
 
+
+0.09  24.03.2015
+  - tests in 0.08 failed in perl >= 5.18 because of hash key orders
+
 0.08  23.03.2015
   - fix multicolumns bug introduced in v0.07
 

@@ -13,7 +13,7 @@ use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
@@ -264,7 +264,7 @@ sub distribute_multicols_criteria {
   my @and_conditions;
 
   # loop over keys that contain the multicol separator character
-  foreach my $multi_cols_key (grep /$sep/, keys %$criteria) {
+  foreach my $multi_cols_key (grep /$sep/, sort keys %$criteria) {
 
     # separate individual columns
     my @cols       = split $sep, $multi_cols_key;

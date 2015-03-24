@@ -18,7 +18,8 @@ my $expected = {foo  => 'bar',
                 -and => [ {-or => [ {a => 1, b => 2, c => 3},
                                     {a => 4, b => 5, c => 6} ]},
                           {d => 7, e => 8},
-                         ]};
+                        ],
+               };
 
 # note explain $criteria;
 is_deeply($criteria, $expected, 'multicols');
