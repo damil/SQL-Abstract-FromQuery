@@ -13,7 +13,7 @@ use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
@@ -101,7 +101,6 @@ sub sub_grammar {
 my %params_for_new = (
   -components    => {type => ARRAYREF, optional => 1  },
   -fields        => {type => HASHREF,  default  => {} },
-  -multicols_sep => {type => SCALAR,   optional => 1  },
 );
 
 sub new {
@@ -150,9 +149,6 @@ sub new {
       $self->{field}{$_} = $type foreach @$fields_aref;
     }
   }
-
-  # other args are just copied into $self (at the moment, only one such arg)
-  $self->{$_} = $args{-$_} for qw/multicols_sep/;
 
   # return the blessed object
   bless $self, $class;
@@ -237,8 +233,6 @@ sub parse {
   # report errors, if any
   SQL::Abstract::FromQuery::_Exception->throw($err_msg, %errors) if %errors;
 
-  # otherwise fix multicolumns and then return result
-  $self->distribute_multicols_criteria(\%result) if $self->{multicols_sep};
   return \%result;
 }
 
@@ -252,67 +246,6 @@ sub _flatten_into_hashref {
     $h{$field} = $val;
   }
   return \%h;
-}
-
-
-
-
-sub distribute_multicols_criteria {
-  my ($self, $criteria) = @_;
-
-  my $sep = qr[$self->{multicols_sep}];
-  my @and_conditions;
-
-  # loop over keys that contain the multicol separator character
-  foreach my $multi_cols_key (grep /$sep/, sort keys %$criteria) {
-
-    # separate individual columns
-    my @cols       = split $sep, $multi_cols_key;
-
-    # remove the entry from the hash and keep the multi-value
-    my $vals       = delete $criteria->{$multi_cols_key};
-
-    # extract the distributed conditions
-    my $conditions = $self->_build_conditions(\@cols, $vals);
-
-    # add that to the list of conditions
-    my $new_cond = @$conditions > 1 ? {-or => $conditions} : $conditions->[0];
-    push @and_conditions, $new_cond;
-  }
-
-  # assemble conditions and put them back into the criteria hash
-  my $previous_and = $criteria->{-and};
-  push @and_conditions, $previous_and if $previous_and;
-  $criteria->{-and} = \@and_conditions if @and_conditions;
-}
-
-
-sub _build_conditions {
-  my ($self, $cols, $val) = @_;
-
-  # is this a SQL::Abstract '-in' clause ?
-  my $ref   = ref $val || '';
-  my $is_in = $ref eq 'HASH' && join('', keys %$val) eq '-in';
-
-  # for easyness of the algorithm, an '-in' clause or a plain scalar
-  # are both treated as a list
-  my @vals = $is_in ? @{$val->{-in}}
-           : $ref   ? die "unexpected ref value for multi_cols_key"
-           :          ($val);
-
-  # for each multi-columns value, we build a "condition" (hashref col=>val)
-  my @conditions;
-  my $sep = qr[$self->{multicols_sep}];
-  foreach my $val (@vals) {
-    my @single_vals = split $sep, $val;
-    @$cols == @single_vals 
-      or die "inconsistent number of values for multi_cols_key";
-    my %condition = mesh @$cols, @single_vals;
-    push @conditions, \%condition;
-  }
-
-  # the result is a list of conditions that will be 'OR-ed' by the caller
-  return \@conditions;
 }
 
 
@@ -565,34 +498,6 @@ L<Regexp::Grammars|Regexp::Grammars> format within the source code of
 this module.  Grammar rules can be augmented or modified in subclasses
 -- see L</INHERITANCE> below.
 
-
-=head1 SUPPORT FOR "MULTICOLUMNS"
-
-
-If the parser is instanciated with a "multicolumns separator"
-(option C<-multicols_sep>), then composite columns in the input hash
-will be automatically split into constraints on individual columns.
-So for example if the separator is C</>, then the following input
-
-  a/b/c : 1/2/3, 4/5/6
-  d/e   : 7/8
-
-will produce 
-
-  {-and => [ {-or => [ {a => 1, b => 2, c => 3},
-                       {a => 4, b => 5, c => 6} ]},
-             {d => 7, e => 8},
-           ]}
-
-so that the resulting SQL is
-
-  WHERE ((a=1 AND b=2 AND c=3) OR (a=4 AND b=5 AND c=6))
-    AND (d=7 AND e=8)
-
-This feature is useful when the database schema contains
-primary keys that range over several columns.
-
-
 =head1 METHODS
 
 =head2 new
@@ -624,12 +529,6 @@ associated with a regex, and user fields found in the query
 that match this regex will be ignored. This is useful if the HTML form
 contains additional information useful for the application, but which
 should not participate in the generated SQL.
-
-
-=item C<-multicols_sep>
-
-Defines a "multicolumn separator", for enabling support for multicolumns,
-as described in the section above.
 
 
 =back
