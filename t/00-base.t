@@ -9,6 +9,8 @@ use Try::Tiny;
 diag( "Testing SQL::Abstract::FromQuery "
     . "$SQL::Abstract::FromQuery::VERSION, Perl $], $^X" );
 
+my $have_obj = eval { require CGI; 1; } || 0;
+
 my $parser = SQL::Abstract::FromQuery->new(
   -fields => {IGNORE => qr/^foo/},
 );
@@ -76,21 +78,27 @@ my @tests = (
 
 );
 
-plan tests => @tests / 2;
+plan tests => @tests / (2 - $have_obj);
 
 while (my ($test_name, $test_data) = splice(@tests, 0, 2)) {
   my ($given, $expected) = @$test_data;
 
-  my $where;
-  try   {$where = $parser->parse({$test_name => $given})}
-  catch {$where = {DIED => $_}; };
+  for my $i (0 .. $have_obj) {
+    my ($where, $parse_arg);
+    $parse_arg = {$test_name => $given};
+    if ($i) {
+      no warnings 'once';
+      $CGI::LIST_CONTEXT_WARN = 0;
+      $parse_arg = CGI->new ($parse_arg);
+    }
+    try   {$where = $parser->parse($parse_arg)}
+    catch {$where = {DIED => $_}; };
 
-  if (does($expected, 'HASH') && $expected->{DIE}) {
-    like $where->{DIED} || $where->{$test_name}, $expected->{DIE}, $test_name;
-  }
-  else {
-    is_deeply($where->{$test_name} || $where->{DIED}, $expected, $test_name);
+    if (does($expected, 'HASH') && $expected->{DIE}) {
+      like $where->{DIED} || $where->{$test_name}, $expected->{DIE}, $test_name;
+    }
+    else {
+      is_deeply($where->{$test_name} || $where->{DIED}, $expected, $test_name);
+    }
   }
 }
-
-
