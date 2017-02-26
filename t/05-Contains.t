@@ -9,6 +9,7 @@ my $parser = SQL::Abstract::FromQuery->new(
   -components => [qw/Contains/],
   -fields => {
      contains => [qw/fulltext/],
+	 contains_any => [qw/fulltext_any/],
    },
 );
 
@@ -18,6 +19,9 @@ my %tests = (
 
   fulltext       => [ 'foo bar, buz',
                       {-contains => [qw/foo bar buz/]},
+                    ],
+  fulltext_any   => [ 'foo bar, buz',
+                      {-contains_any => [qw/foo bar buz/]},
                     ],
 );
 
