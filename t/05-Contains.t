@@ -8,8 +8,8 @@ load 'SQL::Abstract::FromQuery';
 my $parser = SQL::Abstract::FromQuery->new(
   -components => [qw/Contains/],
   -fields => {
-     contains => [qw/fulltext/],
-	 contains_any => [qw/fulltext_any/],
+     contains     => [qw/fulltext/],
+     contains_any => [qw/fulltext_any/],
    },
 );
 
