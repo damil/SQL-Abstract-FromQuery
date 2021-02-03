@@ -3,6 +3,7 @@ use warnings;
 use Test::More;
 
 use SQL::Abstract::FromQuery;
+use SQL::Abstract::FromQuery::Oracle;
 
 my $parser = SQL::Abstract::FromQuery->new(-components => [qw/Oracle/]);
 
