@@ -1,6 +1,11 @@
 Revision history for SQL-Abstract-FromQuery
 
 
+  - upgraded dependency to Regexp::Grammars 1.048 (because tests break with 1.042)
+  - Extend tests to cover passing an object to parse() (openstrike++)
+  - new base type 'datetime'
+
+
 0.10  06.04.2015
   - INCOMPATIBLE CHANGE:
     removed support for multicolumns (moved to SQL-Abstract-More)

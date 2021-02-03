@@ -9,11 +9,12 @@ use Try::Tiny;
 diag( "Testing SQL::Abstract::FromQuery "
     . "$SQL::Abstract::FromQuery::VERSION, Perl $], $^X" );
 
-my $have_obj = eval { require CGI; 1; } || 0;
+my $have_cgi = eval { require CGI; 1; } || 0;
 
 my $parser = SQL::Abstract::FromQuery->new(
   -fields => {IGNORE => qr/^foo/},
 );
+
 
 my @tests = (
 # test_name      => [$given, $expected]
@@ -56,8 +57,14 @@ my @tests = (
                      '2003-02-01'],
   date_dot       => ['1.2.03',
                      '2003-02-01'],
+  greater_date   => ['> 1.2.03',
+                     {'>' => '2003-02-01'}],
   time           => ['1:02',
                      '01:02:00'],
+  datetime       => ['2003-02-01 4:05:06',
+                     '2003-02-01T04:05:06'],
+  datetime_iso   => ['2003-02-01T04:05:06',
+                     '2003-02-01T04:05:06'],
   double_quoted  => ['"foo  bar"',
                      'foo  bar'],
   single_quoted  => ["'foo  bar'",
@@ -68,22 +75,27 @@ my @tests = (
                      'a z'],
   double_space   => ['a  z',
                      'a  z'],
-  initial_space   => [' a z',
-                      'a z'],
-  trailing_space  => ['a z ',
-                      'a z'],
-
+  initial_space  => [' a z',
+                     'a z'],
+  trailing_space => ['a z ',
+                     'a z'],
+  regexp         => ['/^a/im',
+                     {-regexp => ['^a', 'im']}],
+  no_regexp      => ['P/123/2017',
+                     'P/123/2017'],
+  quoted_regexp  => ['"/^a/"',
+                     '/^a/'],
   foo_ignore     => ['BETWEEN ! - %*"', # will be IGNOREd
                      undef],
 
 );
 
-plan tests => @tests / (2 - $have_obj);
+plan tests => @tests / (2 - $have_cgi);
 
 while (my ($test_name, $test_data) = splice(@tests, 0, 2)) {
   my ($given, $expected) = @$test_data;
 
-  for my $i (0 .. $have_obj) {
+  for my $i (0 .. $have_cgi) {
     my ($where, $parse_arg);
     $parse_arg = {$test_name => $given};
     if ($i) {
