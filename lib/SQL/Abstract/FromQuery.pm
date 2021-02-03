@@ -671,12 +671,6 @@ Parameterized syntax:
   mixed : foo:junk AND bar>234 OR (...)
 
 
-Les dates introduites dans les recherches CRUD provoquent une erreur Oracle; pour prévenir l'erreur, on est obligé de mettre la date entre quotes afin qu'elle soit traitée comme une string.
-
-Raison : par défaut l'application convertit automatiquement les dates au format aaaa-mm-jj qui est aussi le format par défaut de Oracle ... sauf que dans nos applications PJ on a changé le format par défaut pour mettre jj.mm.aaaa ! Donc il faut adapter GE-J-AutoCRUD pour qu'il sous-classe le format des dates. 
-
-
-
 =cut
 
 
