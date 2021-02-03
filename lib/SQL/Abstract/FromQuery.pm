@@ -13,7 +13,7 @@ use mro 'c3';
 
 use namespace::clean;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 # root grammar (will be inherited by subclasses)
 my $root_grammar = do {
